@@ -32,11 +32,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                     .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         }
 
-
-
         @Autowired
         public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-            auth.inMemoryAuthentication().withUser("user").password(encoder().encode("Password1")).roles("USER");
+            auth.inMemoryAuthentication().withUser("admin").password(encoder().encode("Password1")).roles("ADMIN");
         }
 
 
