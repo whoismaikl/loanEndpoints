@@ -1,6 +1,6 @@
 package com.qred.task.domain.exception;
 
-public class BlackListedException extends RuntimeException {
+public class BlackListedException extends Exception {
 
     private static final long serialVersionUID = 1L;
 

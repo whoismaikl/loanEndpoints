@@ -20,11 +20,10 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 
 @Service
@@ -40,7 +39,7 @@ public class LoanService {
     private LoanApplicationsByCompanyMapper loanApplicationsByCompanyMapper;
 
     @Transactional
-    public LoanApplyResponseDto applyForLoan(LoanApplicationDto loanRequest) {
+    public LoanApplyResponseDto applyForLoan(LoanApplicationDto loanRequest) throws BlackListedException {
 
         if (loanRequest.getTerm() == 0)
             loanRequest.setTerm(6);
@@ -80,8 +79,7 @@ public class LoanService {
                 company.setType(loanRequest.getCompanyType());
         }
 
-
-        //TODO: check three apply times in 1 minute!
+        checkTimeBetweenRequests(company);
 
         BigDecimal monthlyPayment = LoanUtils.getMonthlyPayment(loanRequest.getLoanAmount(), loanRequest.getTerm());
 
@@ -98,6 +96,28 @@ public class LoanService {
 
         return new LoanApplyResponseDto("Company successefully applied for loan", "/v1/validateLoanApplication");
 
+    }
+
+    private void checkTimeBetweenRequests(Company company) throws BlackListedException {
+        LocalDateTime currentLoanTime = LocalDateTime.now();
+        Set<Loan> loans = company.getLoans();
+
+        if (loans.size() >= 3) {
+            List<LocalDateTime> dates = new ArrayList();
+
+            for (Loan l : loans) {
+                dates.add(l.getDateTaken());
+            }
+            Collections.sort(dates);
+            LocalDateTime thirdDate = dates.get(dates.size()-2);
+
+            long seconds = thirdDate.until(currentLoanTime, ChronoUnit.SECONDS);
+            if(seconds <=60){
+                company.setBlacklisted(true);
+                companyRepository.saveAndFlush(company);
+                throw new BlackListedException("To many requests per minute, company " + company.getRegistrationNumber() + " is blacklisted");
+            }
+        }
     }
 
     public LoanApplicationsByCompanyDto getLoanApplicationsByCompany(String registrationNumber) {
@@ -133,7 +153,7 @@ public class LoanService {
         return loanResponse;
     }
 
-    public ResponseDto validateLoanApplication(String registrationNumber, int loanId) {
+    public ResponseDto validateLoanApplication(String registrationNumber, int loanId) throws BlackListedException {
 
         Loan loan = loanRepository.getOne(Long.valueOf(loanId));
         if (loan.isValidated())
@@ -202,15 +222,15 @@ public class LoanService {
     public LoanConfirmResponseDto confirmLoanApplication(String companyRegistrationNumber, int loanId) {
 
         Loan loan = loanRepository.getOne(Long.valueOf(loanId));
-        if(!loan.isValidated()){
+        if (!loan.isValidated()) {
             throw new LoanNotValidatedException("Loan can not be confirmed before validation!");
         }
-        if(loan.isConfirmed()){
-            return new LoanConfirmResponseDto("Loan already confirmed!",null);
+        if (loan.isConfirmed()) {
+            return new LoanConfirmResponseDto("Loan already confirmed!", null);
         }
 
 
-        LoanConfirmResponseDto loanConfirmResponse =  new LoanConfirmResponseDto("Loan #"+ loanId + " for company " + companyRegistrationNumber + " successefully confirmed !",getLoanSchedule(companyRegistrationNumber,loanId) );
+        LoanConfirmResponseDto loanConfirmResponse = new LoanConfirmResponseDto("Loan #" + loanId + " for company " + companyRegistrationNumber + " successefully confirmed !", getLoanSchedule(companyRegistrationNumber, loanId));
 
         return loanConfirmResponse;
 
