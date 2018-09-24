@@ -1,0 +1,202 @@
+swagger: "2.0"
+info:
+  description: "Qred loan API simple description"
+  version: "1.0.0"
+  title: "Swagger Loan API"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@swagger.io"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost"
+basePath: "/v1"
+tags:
+- name: "loan"
+  description: ""
+schemes:
+- "https"
+- "http"
+paths:
+  /v1/applyForLoan:
+    post:
+      tags:
+      - "loan"
+      summary: "Apply for a loan"
+      operationId: "applyForLoan"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Loan object that needs to be added to the DB"
+        required: true
+        schema:
+          $ref: "#/definitions/Loan"
+      responses:
+        405:
+          description: "Invalid input"
+  /v1/listLoanApplication:
+    get:
+      tags:
+      - "loan"
+      summary: "Finds all loans"
+      operationId: "listLoanApplication"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyRegistrationNumber"
+        in: "query"
+        description: "Company registration number of show loans for"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Loan"
+  /v1/changeLoanApplicationStatus:
+    put:
+      tags:
+      - "loan"
+      summary: "Changes loan application status"
+      operationId: "changeLoanApplicationStatus"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyRegistrationNumber"
+        in: "path"
+        description: "Company registration number of change status for"
+        required: true
+        type: "string"
+      - name: "loanId"
+        in: "path"
+        description: "Loan id to change status for"
+        required: true
+        type: "integer"
+      - name: "isRejected"
+        in: "query"
+        description: "Loan id to change status for"
+        required: false
+        type: "boolean"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Loan not found"
+  /v1/validateLoanApplication:
+    put:
+      tags:
+      - "loan"
+      summary: "Validate a loan"
+      operationId: "validateLoanApplication"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyRegistrationNumber"
+        in: "path"
+        description: "Company registration number of validate loan for"
+        required: true
+        type: "string"
+      - name: "loanId"
+        in: "path"
+        description: "Loan id to validate"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Loan"
+        400:
+          description: "Invalid ID supplied"
+  /v1/confirmLoanApplication:
+    put:
+      tags:
+      - "loan"
+      summary: "Confirm a loan"
+      description: ""
+      operationId: "confirmLoan"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyRegistrationNumber"
+        in: "path"
+        description: "Company registration number of confirm loan for"
+        required: true
+        type: "string"
+      - name: "loanId"
+        in: "path"
+        description: "Loan id to confirm"
+        required: true
+        type: "integer"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Loan not found"
+  /v1/showLoanScheduler:
+    get:
+      tags:
+      - "loan"
+      summary: "Show loan scheduler"
+      operationId: "showLoanScheduler"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "companyRegistrationNumber"
+        in: "path"
+        description: "Company registration number of confirm loan for"
+        required: true
+        type: "string"
+      - name: "id"
+        in: "path"
+        description: "Loan id to confirm"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Loan"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Loan not found"
+definitions:
+  Loan:
+    type: "object"
+    required:
+    - "loanAmount"
+    - "companyRegistrationNumber"
+    - "email"
+    - "phone"
+    - "yearlyTurnover"
+    - "term"
+    properties:
+      id:
+        type: "integer"
+      loanAmount:
+        type: "integer"
+      companyRegistrationNumber:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      yearlyTurnover:
+        type: "integer"
+      term:
+        type: "integer"
+      companyName:
+        type: "string"
+      companyType:
+        type: "string"
+    xml:
+      name: "Loan"
