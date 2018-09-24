@@ -159,7 +159,7 @@ public class LoanController {
 
 
     @RequestMapping(value = "/showLoanScheduler",
-            method = RequestMethod.PUT,
+            method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity showLoanScheduler(@RequestParam("companyRegistrationNumber") String companyRegistrationNumber,
                                             @RequestParam("loanId") String loanId) {
