@@ -182,8 +182,8 @@ public class LoanService {
 
     public LoanSchedurelResponseDto getLoanSchedule(String companyRegistrationNumber, int loanId) {
         LoanSchedurelResponseDto scheduler = new LoanSchedurelResponseDto();
-        Company company = companyRepository.findByRegistrationNumber(companyRegistrationNumber);
-        Loan loan = loanRepository.getOne(Long.valueOf(loanId));
+
+        Loan loan = loanRepository.getOne((long) loanId);
 
 
         scheduler.setAmount(String.valueOf(loan.getLoanAmount()) + "Eur");
