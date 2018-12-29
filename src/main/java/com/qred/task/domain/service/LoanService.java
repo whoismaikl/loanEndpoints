@@ -98,28 +98,6 @@ public class LoanService {
 
     }
 
-    private void checkTimeBetweenRequests(Company company) throws BlackListedException {
-        LocalDateTime currentLoanTime = LocalDateTime.now();
-        Set<Loan> loans = company.getLoans();
-
-        if (loans.size() >= 3) {
-            List<LocalDateTime> dates = new ArrayList();
-
-            for (Loan l : loans) {
-                dates.add(l.getDateTaken());
-            }
-            Collections.sort(dates);
-            LocalDateTime thirdDate = dates.get(dates.size()-2);
-
-            long seconds = thirdDate.until(currentLoanTime, ChronoUnit.SECONDS);
-            if(seconds <=60){
-                company.setBlacklisted(true);
-                companyRepository.saveAndFlush(company);
-                throw new BlackListedException("To many requests per minute, company " + company.getRegistrationNumber() + " is blacklisted");
-            }
-        }
-    }
-
     public LoanApplicationsByCompanyDto getLoanApplicationsByCompany(String registrationNumber) {
         return loanApplicationsByCompanyMapper.mapCompanyToResponce(companyRepository.findByRegistrationNumber(registrationNumber));
     }
@@ -234,6 +212,28 @@ public class LoanService {
 
         return loanConfirmResponse;
 
+    }
+
+    private void checkTimeBetweenRequests(Company company) throws BlackListedException {
+        LocalDateTime currentLoanTime = LocalDateTime.now();
+        Set<Loan> loans = company.getLoans();
+
+        if (loans.size() >= 3) {
+            List<LocalDateTime> dates = new ArrayList();
+
+            for (Loan l : loans) {
+                dates.add(l.getDateTaken());
+            }
+            Collections.sort(dates);
+            LocalDateTime thirdDate = dates.get(dates.size()-2);
+
+            long seconds = thirdDate.until(currentLoanTime, ChronoUnit.SECONDS);
+            if(seconds <=60){
+                company.setBlacklisted(true);
+                companyRepository.saveAndFlush(company);
+                throw new BlackListedException("To many requests per minute, company " + company.getRegistrationNumber() + " is blacklisted");
+            }
+        }
     }
 }
 
